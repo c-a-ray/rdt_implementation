@@ -46,6 +46,8 @@ class RDTLayer(object):
         self.dataToSend = ''
         self.currentIteration = 0
         self.dataReceived = ''
+        self.nextSeqNum = 0
+        self.lastByteSent = 0
         # Add items as needed
 
     # ################################################################################################################ #
@@ -134,8 +136,12 @@ class RDTLayer(object):
         # The data is just part of the entire string that you are trying to send.
         # The seqnum is the sequence number for the segment (in character number, not bytes)
 
-        seqnum = "0"
-        data = self.dataToSend
+        self.nextSeqNum += 1
+        seqnum = self.nextSeqNum
+
+        nextLastByteSent = self.lastByteSent + self.DATA_LENGTH
+        data = self.dataToSend[self.lastByteSent:nextLastByteSent]
+        self.lastByteSent = nextLastByteSent
 
         # ############################################################################################################ #
         # Display sending segment
