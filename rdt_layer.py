@@ -47,6 +47,8 @@ class RDTLayer(object):
         self.currentIteration = 0
         self.dataReceived = ''
         self.seqNum = 0
+        self.expectedSeqNum = 0
+        self.seqNumsRecvd = []
         # Add items as needed
 
     # ################################################################################################################ #
@@ -121,6 +123,9 @@ class RDTLayer(object):
     #                                                                                                                  #
     # ################################################################################################################ #
     def processSend(self):
+        if len(self.dataToSend) == 0:
+            return
+
         segmentSend = Segment()
 
         # ############################################################################################################ #
@@ -161,15 +166,25 @@ class RDTLayer(object):
         # This call returns a list of incoming segments (see Segment class)...
         listIncomingSegments = self.receiveChannel.receive()
 
+        if len(listIncomingSegments) == 0:
+            return
+
         # ############################################################################################################ #
         # What segments have been received?
         # How will you get them back in order?
         # This is where a majority of your logic will be implemented
         # print('processReceive(): Complete this...')
 
-        for seg in listIncomingSegments:
+        seqNumToSeg = {seg.seqnum: seg for seg in listIncomingSegments}
+
+        orderedSegments = []
+        for _ in range(listIncomingSegments):
+            orderedSegments.append(seqNumToSeg[self.nextExpectedSeqNum])
+            self.nextExpectedSeqNum += self.DATA_LENGTH
+
+        for seg in orderedSegments:
             self.dataReceived = f'{self.dataReceived}{seg.payload}'
-    
+
 
         # ############################################################################################################ #
         # How do you respond to what you have received?
